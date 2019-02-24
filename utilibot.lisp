@@ -332,3 +332,15 @@ zippy")
  (with-open-file (foo "./key.txt")
    (read-line foo))
  'event-handler)
+
+(define-bot-command "yt" ()
+  (let ((o (handler-case
+               (concatenate
+                'string
+                "https://youtu.be/"
+                (uiop:run-program
+                 (list "youtube-dl" "--get-id" "--"
+                       (concatenate 'string "ytsearch:" args))
+                 :output '(:string :stripped t)))
+             (uiop:subprocess-error () "There was an error."))))
+    (reply o)))
