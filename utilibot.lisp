@@ -314,9 +314,9 @@ zippy")
               (split-sequence #\Space (subseq content 1) :count 1)
             (let* ((args (subseq content (1+ index)))
                    (cmd (car cmd))
-                   (fun (func (gethash cmd *bot-commands*))))
-              (when fun
-                (funcall fun (make-instance 'context
+                   (cmd (gethash cmd *bot-commands*)))
+              (when (and cmd (func cmd))
+                (funcall (func cmd) (make-instance 'context
                                             :message content
                                             :message-id id
                                             :guild-id guild-id
