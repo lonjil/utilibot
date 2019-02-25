@@ -3,7 +3,6 @@
 (in-package #:utilibot)
 
 (defvar *owner* (with-open-file (s "./owner.txt") (read-line s)))
-(defvar *guild*)
 
 (ubi:restore (merge-pathnames "config/foo.config.lisp" (uiop:getcwd)))
 
@@ -231,23 +230,26 @@ zippy")
 
 (defun update-invite (old new)
   (let ((uses (b:uses old))
-        (nuses (b:uses new)))
-    (setf (b:uses old) nuses)
+        (nuses (b:uses new))
+        (gid (b:id (b:guild old)))
+        (code (b:code old)))
+    (setf (ubi:value 'guild gid 'invites code 'b::%uses) nuses)
     (values old
             (not (= uses nuses)))))
 
 (defvar *invites* (make-hash-table :test 'equal))
 (defun update-or-add-invite (invite)
-  (with-accessors ((code b:code) (uses b:uses))
+  (with-accessors ((code b:code) (uses b:uses) (guild b:guild))
       invite
-    (let ((it (gethash code *invites*)))
+    (let ((it (ubi:value 'guild (b:id guild) 'invites code)))
      (if it
          (update-invite it invite)
-         (values (setf (gethash code *invites*) invite)
+         (values (setf (ubi:value 'guild (b:id guild) 'invites code)
+                       invite)
                  (not (= 0 uses)))))))
 
-(defun prep-invites ()
-  (let ((invites (b:get-invites *guild*)))
+(defun prep-invites (gid)
+  (let ((invites (b:get-invites gid)))
     (loop :for i :in invites
           :do (update-or-add-invite i))))
 
@@ -260,8 +262,8 @@ zippy")
 (defun comp-invite (member)
   (with-accessors ((gid b:guild-id))
       member
-    (when (equal gid *guild*)
-      (let* ((invs (b:get-invites *guild*))
+    (when (ubi:value 'guild gid 'invite-check-p)
+      (let* ((invs (b:get-invites gid))
              (ui (update-invites-and-return-changed invs))
              (user (b:user member))
              (uid (b:id user))
@@ -278,7 +280,7 @@ zippy")
                                           (b:discrim (b:inviter x))
                                           (b:id (b:inviter x))))
                             (list "No invites seem to have changed.")))))
-        (b:send-message (ubi:value 'log-channel) c)))))
+        (b:send-message (ubi:value 'guild gid 'invite-log) c)))))
 
 
 (defun event-handler (event data)
@@ -323,10 +325,6 @@ zippy")
                                             :channel-id chid
                                             :author author
                                             :args args))))))))))
-
-(unless (boundp '*guild*)
-  (with-open-file (s "guild.txt")
-    (setf *guild* (read-line s))))
 
 (b:new-discord
  (with-open-file (foo "./key.txt")
