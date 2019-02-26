@@ -2,8 +2,6 @@
 
 (in-package #:utilibot)
 
-(defvar *owner* (with-open-file (s "./owner.txt") (read-line s)))
-
 (ubi:restore (merge-pathnames "config/foo.config.lisp" (uiop:getcwd)))
 
 (defclass command ()
@@ -46,7 +44,7 @@
                                      :long-help ,long-help)))))
 
 (defmacro private (&body b)
-  `(when (equal (b:id author) *owner*)
+  `(when (equal (b:id author) (ubi:value 'owner))
      ,@b))
 
 (defparameter *prefix* "&")
