@@ -7,6 +7,7 @@
   :version "0.3.0"
   :serial t
   :depends-on (#:queues #:cl-harmony #:bordeaux-threads
-               #:ubiquitous-concurrent)
+               #:ubiquitous-concurrent #:cl-unicode
+               #:alexandria)
   :components ((:file "package")
                (:file "utilibot")))

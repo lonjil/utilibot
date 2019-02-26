@@ -3,7 +3,7 @@
 (defpackage #:utilibot
   (:use #:cl
         #:bt #:split-sequence
-        #:alexandria #:metabang.bind)
+        #:alexandria)
   (:local-nicknames
                     (#:b #:xyz.lonjil.discord/base)
                     (#:l #:xyz.lonjil.discord/logger)
