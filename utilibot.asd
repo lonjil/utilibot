@@ -4,7 +4,7 @@
   :description "Describe utilibot here"
   :author "Birk Hirdman <lonjil@gmail.com>"
   :license  "MIT"
-  :version "0.0.1"
+  :version "0.3.0"
   :serial t
   :depends-on (#:queues #:cl-harmony #:bordeaux-threads
                #:ubiquitous-concurrent)
