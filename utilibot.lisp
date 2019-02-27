@@ -257,6 +257,12 @@ zippy")
         :if (cadr x)
           :collect (car x)))
 
+(defun invite-string (x)
+  (format nil "(~a to <#~a> by ~a#~a (~a))"
+          (b:code x) (b:id (b:channel x))
+          (b:username (b:inviter x))
+          (b:discrim (b:inviter x))
+          (b:id (b:inviter x))))
 (defun comp-invite (member)
   (with-accessors ((gid b:guild-id))
       member
@@ -271,14 +277,35 @@ zippy")
                         uid name discrim
                         (if ui
                             (loop :for x :in ui
-                                  :collect
-                                  (format nil "(~a to <#~a> by ~a#~a (~a))"
-                                          (b:code x) (b:id (b:channel x))
-                                          (b:username (b:inviter x))
-                                          (b:discrim (b:inviter x))
-                                          (b:id (b:inviter x))))
+                                  :collect (invite-string x))
                             (list "No invites seem to have changed.")))))
         (b:send-message (ubi:value 'guild gid 'invite-log) c)))))
+
+(defun report-changed-invites (gid &optional reason)
+  (when (ubi:value 'guild gid 'invite-check-p)
+    (let* ((invs (b:get-invites gid))
+           (ui (update-invites-and-return-changed invs)))
+      (when ui
+        (b:send-message
+         (ubi:value 'guild gid 'invite-log)
+         (format nil "Manual check of changed invites: ~{~a~^, ~}~
+~@[~%~%Note from lonjil: ~a~]"
+                 (loop :for x :in ui
+                       :collect (invite-string x))
+                 reason))))))
+
+(defun globally-report-changed-invites (&optional reason)
+  (maphash-keys
+   (lambda (k)
+     (report-changed-invites k reason))
+   (ubi:value 'guild)))
+
+(define-bot-command "update-invites" ()
+  (private
+    (globally-report-changed-invites
+     (if (and args (> 3 (length args)))
+         args))
+    (reply "All done.")))
 
 
 (defun event-handler (event data)
