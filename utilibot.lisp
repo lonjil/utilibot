@@ -21,13 +21,9 @@
 (defvar *bot-commands* (make-hash-table :test 'equal))
 (defvar *helpers* (list))
 
-(defmacro define-bot-command (name (&key documentation
-                                      short-help
-                                      long-help)
-                              &body body)
-  `(progn
-     (let ((f (lambda (context)
-                (with-accessors ((args args) (author author)
+(defun command-context (body)
+  `(lambda (context)
+     (with-accessors ((args args) (author author)
                                  (channel-id channel-id)
                                  (guild-id guild-id) (message-id message-id)
                                  (message message))
@@ -36,7 +32,13 @@
                            (b:send-message
                             channel-id
                             (apply #'format nil format-string arguments))))
-                    ,@body)))))
+                    ,@body))))
+(defmacro define-bot-command (name (&key documentation
+                                      short-help
+                                      long-help)
+                              &body body)
+  `(progn
+     (let ((f ,(command-context body)))
        (setf (gethash ,name *bot-commands*)
              (make-instance 'command :name ,name
                                      :func f :docs ,documentation
@@ -367,3 +369,16 @@ zippy")
                  :output '(:string :stripped t)))
              (uiop:subprocess-error () "There was an error."))))
     (reply o)))
+
+(define-bot-command "eval" ()
+  (private
+    (let ((*package* (find-package :utilibot))
+          (s (make-array 0 :fill-pointer 0 :adjustable t
+                           :element-type 'character)))
+      (with-output-to-string (*standard-output* s)
+        (let* ((form (read-from-string args))
+               (ret (handler-case
+                       (funcall (compile nil (command-context (list form)))
+                                context)
+                     (t (c) c))))
+         (reply "~@[~a~%~]~s" (if (> (length s) 0) s nil) ret))))))

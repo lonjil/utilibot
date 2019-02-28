@@ -10,4 +10,4 @@
                     (#:unicode #:cl-unicode)
                     (#:ubi #:ubiquitous)
                     )
-  (:shadow eval #:message))
+  (:shadow #:message))
