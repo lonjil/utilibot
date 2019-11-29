@@ -118,8 +118,6 @@ zippy")
 
 (define-bot-command "source" (:short-help "git link")
   (reply "http://github.com/lonjil/utilibot"))
-(define-bot-command "test" ()
-  (reply "maid!zap FV5 bunny girl"))
 (define-bot-command "pronouns" ()
   (reply "They use they/them pronouns, friend."))
 (define-bot-command "version" (:short-help "current version")
