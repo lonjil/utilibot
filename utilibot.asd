@@ -10,4 +10,5 @@
                #:ubiquitous-concurrent #:cl-unicode
                #:alexandria)
   :components ((:file "package")
+               (:file "stuff")
                (:file "utilibot")))
