@@ -138,6 +138,24 @@ zippy")
                     (mapcar (lambda (x) (string-trim +whitespace+ x))
                             (split-sequence #\Newline o)))))
     (reply "```~a```" o)))
+(define-bot-command "calc" (:short-help "[expr]"
+                            :long-help "See qalc(1)")
+  (let ((o (handler-case
+               (uiop:run-program
+                (list "qalc" "-nocurrencies" "--set" "rpnsyn off" args)
+                :output '(:string :stripped t)
+                )
+             (uiop:subprocess-error () (abort)))))
+    (reply "```~a```" o)))
+(define-bot-command "rpn" (:short-help "[expr]"
+                            :long-help "See qalc(1)")
+  (let ((o (handler-case
+               (uiop:run-program
+                (list "qalc" "-nocurrencies" "--set" "rpnsyn on" args)
+                :output '(:string :stripped t)
+                )
+             (uiop:subprocess-error () (abort)))))
+    (reply "```~a```" o)))
 (define-bot-command "fortune" ()
   (if (equal (car (split-sequence #\Space args)) "-list")
       (reply "```~a```" *fortune-types*)
