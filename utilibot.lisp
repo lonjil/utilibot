@@ -328,7 +328,8 @@ zippy")
       (when (>= (length content) 2)
         (setf prefix (subseq content 0 1)))
       (when (and (equal chid (ubi:value 'consent-channel))
-                 (equal content "I have read the rules."))
+                 (or (equalp content "I have read the rules.")
+                     (equalp content "I have read the rules")))
         (b:add-member-role guild-id user-id (ubi:value 'user-role))
         (b:send-message chid "Noted."))
       (when (equal prefix "&")
@@ -341,12 +342,12 @@ zippy")
                    (cmd (gethash cmd *bot-commands*)))
               (when (and cmd (func cmd))
                 (funcall (func cmd) (make-instance 'context
-                                            :message content
-                                            :message-id id
-                                            :guild-id guild-id
-                                            :channel-id chid
-                                            :author author
-                                            :args args))))))))))
+                                                   :message content
+                                                   :message-id id
+                                                   :guild-id guild-id
+                                                   :channel-id chid
+                                                   :author author
+                                                   :args args))))))))))
 
 (b:new-discord
  (with-open-file (foo "./key.txt")
@@ -377,3 +378,6 @@ zippy")
                                 context)
                      (t (c) c))))
          (reply "~@[~a~%~]~s" (if (> (length s) 0) s nil) ret))))))
+
+(define-bot-command "fuck" ()
+  (private (print 'test)))
